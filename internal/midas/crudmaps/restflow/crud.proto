@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package entityservice;
+
+// A generic identifier for any entity
+message Identifier {
+  string id = 1;
+}
+
+// Represents a generic type, could be a table, row, or a field type
+message EntityType {
+  string name = 1;
+}
+
+// A flexible, strongly-typed value container
+message TypedValue {
+  oneof value {
+    string string_value = 1;
+    int32 int_value = 2;
+    float float_value = 3;
+    bool bool_value = 4;
+    bytes binary_value = 5;
+  }
+}
+
+// Represents a single field in a row, with its name and value
+message Field {
+  string name = 1;
+  TypedValue value = 2;
+}
+
+// A collection of fields, representing a row
+message Entity {
+  Identifier id = 1;
+  EntityType type = 2;
+  repeated Field fields = 3;
+}
+
+// CRUD Requests and Responses for Entities
+message CreateEntityRequest {
+  Entity entity = 1;
+}
+
+message GetEntityRequest {
+  Identifier id = 1;
+}
+
+message EntityResponse {
+  Entity entity = 1;
+}
+
+message ListEntitiesResponse {
+  repeated Entity entities = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}
+
+// Entity service
+service EntityService {
+  rpc CreateEntity(CreateEntityRequest) returns (EntityResponse);
+  rpc GetEntity(GetEntityRequest) returns (EntityResponse);
+  rpc ListEntities(google.protobuf.Empty) returns (ListEntitiesResponse);
+  rpc DeleteEntity(Identifier) returns (DeleteResponse);
+}

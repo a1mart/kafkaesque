@@ -1,0 +1,554 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Kafkaesque API",
+    "description": "Like Kafka",
+    "version": "v1",
+    "contact": {
+      "name": "Aidan Martin",
+      "url": "https://github.com/grpc-ecosystem/grpc-gateway",
+      "email": "aidan3martin@gmail.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/grpc-ecosystem/grpc-gateway/blob/main/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.example.com/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:8080/v1",
+      "description": "Local server"
+    },
+    {
+      "url": "http://cluster.dev.namespace:8080/v1",
+      "description": "K8s tunnel server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "MessagingService"
+    },
+    {
+      "name": "AdminService"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/admin/consumers": {
+      "get": {
+        "operationId": "AdminService_ListConsumers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingListConsumersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
+    "/v1/admin/topics": {
+      "get": {
+        "operationId": "AdminService_ListTopics",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingListTopicsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "AdminService"
+        ]
+      },
+      "post": {
+        "operationId": "AdminService_CreateTopic",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingCreateTopicResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messagingCreateTopicRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AdminService"
+        ]
+      }
+    },
+    "/v1/messaging/acknowledge": {
+      "post": {
+        "operationId": "MessagingService_Acknowledge",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingAckResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messagingAckRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MessagingService"
+        ]
+      }
+    },
+    "/v1/messaging/consume": {
+      "get": {
+        "operationId": "MessagingService_Consume",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingConsumeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "topic",
+            "description": "Topic name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "consumerGroup",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "batchSize",
+            "description": "Number of messages to consume",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MessagingService"
+        ]
+      }
+    },
+    "/v1/messaging/deadletters": {
+      "get": {
+        "operationId": "MessagingService_GetDeadLetters",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingDeadLetterResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "consumerGroup",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "batchSize",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MessagingService"
+        ]
+      }
+    },
+    "/v1/messaging/publish": {
+      "post": {
+        "summary": "Publish messages",
+        "operationId": "publish",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/messagingPublishResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messagingPublishRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MessagingService"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/v1/messaging/register_consumer": {
+      "post": {
+        "operationId": "MessagingService_RegisterConsumerGroup",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/messagingRegisterConsumerResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/messagingRegisterConsumerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MessagingService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "messagingAckRequest": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "consumerGroup": {
+          "type": "string"
+        },
+        "messageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "IDs of messages being acknowledged"
+        }
+      },
+      "title": "Request to acknowledge processed messages"
+    },
+    "messagingAckResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "title": "Response for acknowledgment"
+    },
+    "messagingConsumeResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messagingMessage"
+          },
+          "title": "List of messages"
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "title": "Response after consuming messages"
+    },
+    "messagingCreateTopicRequest": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "title": "Topic name"
+        },
+        "strategy": {
+          "type": "string",
+          "title": "Distribution strategy (e.g., \"round_robin\", \"broadcast\")"
+        }
+      },
+      "title": "Admin functionality to manage topics and strategies"
+    },
+    "messagingCreateTopicResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "messagingDeadLetterResponse": {
+      "type": "object",
+      "properties": {
+        "messages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messagingMessage"
+          }
+        },
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "messagingListConsumersResponse": {
+      "type": "object",
+      "properties": {
+        "consumerGroups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "messagingListTopicsResponse": {
+      "type": "object",
+      "properties": {
+        "topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/messagingTopicInfo"
+          }
+        }
+      }
+    },
+    "messagingMessage": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "Unique identifier for the message"
+        },
+        "type": {
+          "type": "string",
+          "title": "Type of the message (could relate to the schema)"
+        },
+        "payload": {
+          "type": "string",
+          "format": "byte",
+          "title": "Payload data, can be any data type (serialized)"
+        }
+      },
+      "title": "A generic message structure that can hold any kind of message"
+    },
+    "messagingPublishRequest": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "title": "Topic name"
+        },
+        "message": {
+          "$ref": "#/definitions/messagingMessage",
+          "title": "The actual message"
+        }
+      },
+      "title": "Request to publish a message"
+    },
+    "messagingPublishResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "title": "Response after publishing a message"
+    },
+    "messagingRegisterConsumerRequest": {
+      "type": "object",
+      "properties": {
+        "consumerGroup": {
+          "type": "string"
+        }
+      }
+    },
+    "messagingRegisterConsumerResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "error": {
+          "type": "string"
+        }
+      }
+    },
+    "messagingTopicInfo": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "strategy": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "externalDocs": {
+    "description": "Documentation",
+    "url": "https://github.com/grpc-ecosystem/grpc-gateway"
+  }
+}

@@ -1,0 +1,282 @@
+syntax = "proto3";
+
+package messaging;
+
+import "google/api/annotations.proto";
+
+// ======================== Message Structure ========================
+message Message {
+    string id = 1;        // Unique message ID
+    string type = 2;      // Schema type or message category
+    bytes payload = 3;    // Serialized message data
+    int64 timestamp = 4;  // Epoch timestamp of the message
+}
+
+// ======================== Publishing Messages ========================
+message PublishRequest {
+    string topic = 1;   
+    Message message = 2;
+}
+
+message PublishResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// ======================== Consuming Messages ========================
+message ConsumeRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    int32 batch_size = 3;
+}
+
+message ConsumeResponse {
+    repeated Message messages = 1;
+    bool success = 2;
+    string error = 3;
+}
+
+// ======================== Acknowledging Messages ========================
+message AckRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    repeated string message_ids = 3;
+}
+
+message AckResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// ======================== Dead Letter Queue Management ========================
+message DeadLetterRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    int32 batch_size = 3;
+}
+
+message DeadLetterResponse {
+    repeated Message messages = 1;
+    bool success = 2;
+    string error = 3;
+}
+
+// Request to reprocess messages from the dead-letter queue
+message ReprocessDeadLetterRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    repeated string message_ids = 3;
+}
+
+message ReprocessDeadLetterResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Request to purge all dead-letter messages
+message PurgeDeadLetterRequest {
+    string topic = 1;
+    string consumer_group = 2;
+}
+
+message PurgeDeadLetterResponse {
+    bool success = 1;
+}
+
+// ======================== Consumer Group Management ========================
+message RegisterConsumerRequest {
+    string consumer_group = 1;
+}
+
+message RegisterConsumerResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+// Request to unregister a consumer group
+message UnregisterConsumerRequest {
+    string consumer_group = 1;
+}
+
+message UnregisterConsumerResponse {
+    bool success = 1;
+}
+
+// ======================== Pause & Resume Consumers ========================
+message PauseConsumerRequest {
+    string consumer_group = 1;
+}
+
+message PauseConsumerResponse {
+    bool success = 1;
+}
+
+message ResumeConsumerRequest {
+    string consumer_group = 1;
+}
+
+message ResumeConsumerResponse {
+    bool success = 1;
+}
+
+// ======================== Message Replay / Seeking ========================
+message SeekRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    oneof position {
+        int64 offset = 3;     // Seek to a specific offset
+        int64 timestamp = 4;  // Seek to a specific timestamp
+    }
+}
+
+message SeekResponse {
+    bool success = 1;
+}
+
+// ======================== Topic Management ========================
+message CreateTopicRequest {
+    string topic = 1;
+    string strategy = 2; // Distribution strategy: "round_robin", "broadcast", etc.
+}
+
+message CreateTopicResponse {
+    bool success = 1;
+    string error = 2;
+}
+
+message ListTopicsRequest {}
+
+message ListTopicsResponse {
+    repeated TopicInfo topics = 1;
+}
+
+message TopicInfo {
+    string topic = 1;
+    string strategy = 2;
+}
+
+// Request to delete a topic
+message DeleteTopicRequest {
+    string topic = 1;
+}
+
+message DeleteTopicResponse {
+    bool success = 1;
+}
+
+// ======================== Streaming ========================
+
+message StreamRequest {
+    string topic = 1;
+    string consumer_group = 2;
+    string filter_expression = 3;  // E.g., "temperature > 30"
+}
+
+message StreamResponse {
+    repeated Message messages = 1;
+}
+
+// ======================== Messaging Service ========================
+service MessagingService {
+    rpc Publish(PublishRequest) returns (PublishResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/publish"
+            body: "*"
+        };
+    }
+
+    rpc Consume(ConsumeRequest) returns (ConsumeResponse) {
+        option (google.api.http) = {
+            get: "/v1/messaging/consume"
+        };
+    }
+
+    rpc Acknowledge(AckRequest) returns (AckResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/acknowledge"
+            body: "*"
+        };
+    }
+
+    rpc GetDeadLetters(DeadLetterRequest) returns (DeadLetterResponse) {
+        option (google.api.http) = {
+            get: "/v1/messaging/deadletters"
+        };
+    }
+
+    rpc ReprocessDeadLetter(ReprocessDeadLetterRequest) returns (ReprocessDeadLetterResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/deadletters/reprocess"
+            body: "*"
+        };
+    }
+
+    rpc PurgeDeadLetter(PurgeDeadLetterRequest) returns (PurgeDeadLetterResponse) {
+        option (google.api.http) = {
+            delete: "/v1/messaging/deadletters"
+        };
+    }
+
+    rpc RegisterConsumerGroup(RegisterConsumerRequest) returns (RegisterConsumerResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/register_consumer"
+            body: "*"
+        };
+    }
+
+    rpc UnregisterConsumerGroup(UnregisterConsumerRequest) returns (UnregisterConsumerResponse) {
+        option (google.api.http) = {
+            delete: "/v1/messaging/unregister_consumer"
+        };
+    }
+
+    rpc PauseConsumer(PauseConsumerRequest) returns (PauseConsumerResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/pause_consumer"
+            body: "*"
+        };
+    }
+
+    rpc ResumeConsumer(ResumeConsumerRequest) returns (ResumeConsumerResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/resume_consumer"
+            body: "*"
+        };
+    }
+
+    rpc Seek(SeekRequest) returns (SeekResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/seek"
+            body: "*"
+        };
+    }
+
+    rpc Stream(StreamRequest) returns (stream StreamResponse) {
+        option (google.api.http) = {
+            post: "/v1/messaging/stream"
+            body: "*"
+        };
+    }
+}
+
+// ======================== Admin Service ========================
+service AdminService {
+    rpc CreateTopic(CreateTopicRequest) returns (CreateTopicResponse) {
+        option (google.api.http) = {
+            post: "/v1/admin/topics"
+            body: "*"
+        };
+    }
+
+    rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse) {
+        option (google.api.http) = {
+            get: "/v1/admin/topics"
+        };
+    }
+
+    rpc DeleteTopic(DeleteTopicRequest) returns (DeleteTopicResponse) {
+        option (google.api.http) = {
+            delete: "/v1/admin/topics/{topic}"
+        };
+    }
+}

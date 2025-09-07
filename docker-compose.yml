@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  kafkaesque:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kafkaesque
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      BROKER_COUNT: 1
+      INCLUDE_REGISTRY: True
+
