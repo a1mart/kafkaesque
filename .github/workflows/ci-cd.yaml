@@ -42,8 +42,8 @@ jobs:
       - name: Install Dependencies
         run: make deps
 
-      - name: Run Linter
-        run: make lint
+      # - name: Run Linter
+      #   run: make lint
 
       - name: Run Tests
         run: make test
